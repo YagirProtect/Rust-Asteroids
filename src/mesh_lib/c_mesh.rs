@@ -8,6 +8,8 @@ use crate::assetsdb_lib::json_utils::{read_json_file, ReadJsonError};
 use crate::assetsdb_lib::t_file_readable::FileReadable;
 use crate::assetsdb_lib::t_file_writable::FileWritable;
 use crate::assetsdb_lib::t_from_assetref::FromAssetRef;
+use crate::render_lib::t_drawable::Drawable;
+use crate::render_lib::t_screen_data::Screen;
 
 #[derive(Serialize, Deserialize)]
 pub struct MeshLine{
@@ -30,6 +32,11 @@ pub struct Mesh{
     filled: bool
 }
 
+impl Mesh {
+    pub fn is_filled(&self) -> bool {
+        self.filled
+    }
+}
 
 impl FileWritable for Mesh{}
 

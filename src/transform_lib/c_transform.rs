@@ -7,7 +7,11 @@ pub struct Transform {
     rotation: f32,
 }
 
-
+impl Transform {
+    pub fn rotate_to(&mut self, z: f32) {
+        self.rotation = z;
+    }
+}
 
 impl Transform {
     pub fn new(position: Vec2<f32>, scale: Vec2<f32>, rotation: f32) -> Self {
