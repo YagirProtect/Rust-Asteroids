@@ -7,7 +7,6 @@ pub struct Screen {
     buffer: Vec<u32>
 }
 
-
 impl Screen {
     pub fn new(width: usize, height: usize) -> Self {
         Self {

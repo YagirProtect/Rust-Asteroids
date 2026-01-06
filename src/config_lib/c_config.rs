@@ -5,7 +5,7 @@ use crate::assetsdb_lib::t_file_readable::FileReadable;
 use crate::assetsdb_lib::t_file_writable::FileWritable;
 use crate::assetsdb_lib::t_from_assetref::FromAssetRef;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Copy, Clone)]
 pub struct Config{
     window_size: Vec2<usize>
 }
