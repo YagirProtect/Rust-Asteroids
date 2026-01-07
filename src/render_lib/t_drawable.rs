@@ -5,9 +5,10 @@ use crate::transform_lib::c_transform::Transform;
 
 pub trait Drawable{
 
-    fn draw(&mut self, screen: &mut Screen);
-
-
+    fn enabled_renderer(&self) -> bool {true}
+    
+    fn draw(&mut self, screen: &mut Screen) {}
+    
     fn draw_mesh(&self, screen: &mut Screen, transform: &Transform, mesh: &Mesh){
 
         if (!mesh.is_filled()) {

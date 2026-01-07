@@ -1,28 +1,71 @@
-﻿use vek::Vec2;
+﻿use vek::{Vec2, Vec4};
+
+pub struct TransformBounds{
+    max: Vec2<f32>,
+    min: Vec2<f32>,
+}
+
+impl TransformBounds {
+    pub fn new(max: Vec2<usize>) -> TransformBounds {
+        TransformBounds{max: Vec2::new(max.x as f32, max.y as f32), min: Vec2::zero()}
+    }
+}
+
 
 pub struct Transform {
     position: Vec2<f32>,
     velocity: Vec2<f32>,
     scale: Vec2<f32>,
     rotation: f32,
+
+    bounds: TransformBounds,
 }
 
 impl Transform {
     pub fn rotate_to(&mut self, z: f32) {
         self.rotation = z;
     }
+
+    pub fn update_position_by_vel(&mut self, delta_time: f32) {
+        self.update_position_warp(self.position + self.velocity * delta_time);
+    }
+
+    pub fn update_position_warp(&mut self, pos: Vec2<f32>){
+
+        let mut p = pos.clone();
+
+        if (p.x < self.bounds.min.x){
+            p += Vec2::new(self.bounds.max.x, 0.0);
+        }
+        if (p.x > self.bounds.max.x){
+            p -= Vec2::new(self.bounds.max.x, 0.0);
+        }
+
+        if (p.y < self.bounds.min.y){
+            p += Vec2::new(0.0, self.bounds.max.y);
+        }
+        if (p.y > self.bounds.max.y){
+            p -= Vec2::new(0.0, self.bounds.max.y);
+        }
+
+        self.position = p;
+    }
 }
 
 impl Transform {
-    pub fn new(position: Vec2<f32>, scale: Vec2<f32>, rotation: f32) -> Self {
+    pub fn new(position: Vec2<f32>, scale: Vec2<f32>, rotation: f32, bounds: Vec2<usize>) -> Self {
         Self {
             position,
             scale,
             rotation,
             velocity: Vec2::new(0.0, 0.0),
+            bounds: TransformBounds::new(bounds),
         }
     }
-    
+
+    pub fn add_rotation(&mut self, r: f32) {
+        self.rotation += r;
+    }
     
     pub fn set_velocity(&mut self, velocity: Vec2<f32>) {
         self.velocity = velocity;

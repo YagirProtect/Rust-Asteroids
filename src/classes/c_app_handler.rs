@@ -10,7 +10,10 @@ use winit::{
     event_loop::{ControlFlow, EventLoop},
     window::WindowBuilder,
 };
+use winit::event::ElementState;
+use winit::keyboard::PhysicalKey;
 use winit::window::WindowButtons;
+use crate::classes::c_input::Input;
 
 #[derive(Copy, Clone, Default)]
 pub struct AppHandler {
@@ -20,7 +23,7 @@ pub struct AppHandler {
 
 
 impl AppHandler {
-    pub fn run(&mut self, game: &mut Game) {
+    pub fn run(&mut self, game: &mut Game, input: &mut Input) {
         let config = game.get_config();
 
         let event_loop = EventLoop::new().unwrap();
@@ -63,13 +66,21 @@ impl AppHandler {
         event_loop.set_control_flow(ControlFlow::Poll);
 
         let mut last = Instant::now();
-        let mut screen = game.get_screen_mut();
         event_loop.run(move |event, elwt| match event {
             Event::WindowEvent { ref event, .. } => {
 
                 let consumed = egui_state.on_window_event(&window, event).consumed;
 
                 match event {
+
+                    WindowEvent::KeyboardInput { event, .. } => {
+                        let is_down = event.state == ElementState::Pressed;
+
+                        if let PhysicalKey::Code(code) = event.physical_key {
+                            input.on_key(code, is_down);
+                        }
+                    }
+
                     WindowEvent::CloseRequested => { elwt.exit(); }
                     WindowEvent::RedrawRequested => {
                         let now = Instant::now();
@@ -83,17 +94,12 @@ impl AppHandler {
 
 
                         {///LOGIC
-                            screen.flush();
-
-                            
-
-                            blit_u32_to_rgba_bytes(pixels.frame_mut(), screen.get_buffer());
+                            input.update(dt);
+                            if (!game.update_game(dt, &egui_state.egui_ctx(), &input)) {
+                                elwt.exit();
+                            }
+                            blit_u32_to_rgba_bytes(pixels.frame_mut(), game.get_screen().get_buffer());
                         }
-
-                        egui::Window::new("Debug").show(egui_state.egui_ctx(), |ui| {
-                            ui.label(format!("dt: {:.4} sec", dt));
-                            ui.label(format!("present_mode: {:?}", pixels.present_mode()));
-                        });
 
                         let full = egui_state.egui_ctx().end_frame();
 
