@@ -23,12 +23,12 @@ impl Game {
         let assets_db = AssetsDB::new();
         let config = assets_db.get_any_asset_by_type::<Config>().cloned().unwrap_or_default();
         let screen = Screen::new(config.x(), config.y());
-        let scene = make_scene(SceneId::Test, &config, &screen);
+        let scene = make_scene(SceneId::Test, &config, &screen, &assets_db);
         Self{
             assets_db,
             config,
             screen,
-            scene: scene,
+            scene,
         }
     }
 
@@ -37,10 +37,10 @@ impl Game {
     pub fn update_game(&mut self, delta_time: f32, ctx: &egui::Context, input: &Input) -> bool {
         self.screen.flush();
 
-        match self.scene.update(delta_time, input, &self.config) {
+        match self.scene.update(delta_time, input, &self.config, &self.assets_db) {
             SceneSwitch::None => {}
             SceneSwitch::Switch(new_scene_id) => {
-                self.scene = make_scene(new_scene_id, &self.config, &self.screen);
+                self.scene = make_scene(new_scene_id, &self.config, &self.screen, &self.assets_db);
             }
             SceneSwitch::Quit => {
                 return false;
@@ -80,14 +80,14 @@ impl Game {
     }
 }
 
-fn make_scene(scene_id: SceneId, config: &Config, screen: &Screen) -> Box<dyn Scene> {
+fn make_scene(scene_id: SceneId, config: &Config, screen: &Screen, assets_db: &AssetsDB) -> Box<dyn Scene> {
     let mut value : Box<dyn Scene> = match scene_id {
         SceneId::Menu => Box::new(MenuScene::default()),
         SceneId::Game => Box::new(GameScene::default()),
         SceneId::Test => Box::new(TestScene::default())
     };
     
-    value.create_scene(config, screen);
+    value.create_scene(config, screen, assets_db);
     
     return value;
 }

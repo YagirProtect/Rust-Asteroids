@@ -1,8 +1,10 @@
 ﻿use std::collections::HashMap;
 use std::{env, fs};
 use std::fs::read_dir;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+use std::rc::Rc;
 use crate::assetsdb_lib::e_asset::Asset;
+use crate::mesh_lib::c_mesh::Mesh;
 use crate::assetsdb_lib::loaders::c_config_asset_processor::ConfigLoader;
 use crate::assetsdb_lib::loaders::c_meshes_asset_processor::MeshLoader;
 use crate::assetsdb_lib::loaders::t_asset_loader::AssetLoader;
@@ -102,7 +104,20 @@ impl AssetsDB {
 
 
     pub fn get_asset<T: FromAssetRef>(&self, path: &str) -> Option<&T> {
-        self.map.get(path).and_then(T::from_asset)
+        let mut p = Self::root_folder();
+        p = p.join(path);
+        self.map.get(p.to_str().unwrap()).and_then(T::from_asset)
+    }
+
+    pub fn get_mesh_by_name(&self, name: &str) -> Option<Rc<Mesh>> {
+        self.map.iter().find_map(|(k, v)| match v {
+            Asset::Mesh(m)
+
+            if Path::new(k)
+                .file_stem()
+                .and_then(|s| s.to_str()) == Some(name) => Some(Rc::clone(m)),
+            _ => None,
+        })
     }
 
     pub fn get_all_assets_by_type<T: FromAssetRef>(&self) -> Option<Vec<&T>> {

@@ -80,7 +80,7 @@ impl Input {
     }
 
     pub fn get_fire(&self) -> bool {
-        return self.fire.lerp > 0.0;
+        return self.fire.raw >= 1;
     }
 
     pub fn update(&mut self, dt: f32) {

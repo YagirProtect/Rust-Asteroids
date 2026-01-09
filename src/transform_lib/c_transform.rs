@@ -1,5 +1,6 @@
 ﻿use vek::{Vec2, Vec4};
 
+#[derive(Debug, Copy, Clone)]
 pub struct TransformBounds{
     max: Vec2<f32>,
     min: Vec2<f32>,
@@ -11,7 +12,7 @@ impl TransformBounds {
     }
 }
 
-
+#[derive(Debug, Copy, Clone)]
 pub struct Transform {
     position: Vec2<f32>,
     velocity: Vec2<f32>,
@@ -22,6 +23,10 @@ pub struct Transform {
 }
 
 impl Transform {
+
+    pub fn get_rotation(&self) -> f32 {
+        self.rotation
+    }
     pub fn rotate_to(&mut self, z: f32) {
         self.rotation = z;
     }

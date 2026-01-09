@@ -17,7 +17,7 @@ impl Screen {
     }
 
     pub fn flush(&mut self) {
-        self.buffer.fill(0);
+        self.buffer.fill(15);
     }
 
     pub fn width(&self) -> usize { self.width }

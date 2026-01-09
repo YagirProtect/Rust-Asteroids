@@ -11,7 +11,7 @@ use crate::assetsdb_lib::t_from_assetref::FromAssetRef;
 use crate::render_lib::t_drawable::Drawable;
 use crate::render_lib::t_screen_data::Screen;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Copy, Clone)]
 pub struct MeshLine{
     pub start: Vec2<f32>,
     pub end: Vec2<f32>,
@@ -26,7 +26,8 @@ impl MeshLine {
     }    
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
+#[derive(Default)]
 pub struct Mesh{
     points: Vec<MeshLine>,
     filled: bool

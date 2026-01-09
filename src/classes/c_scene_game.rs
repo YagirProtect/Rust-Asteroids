@@ -1,6 +1,7 @@
 ﻿use vek::Vec2;
+use crate::assetsdb_lib::c_assets_db::AssetsDB;
 use crate::classes::t_entity::Entity;
-use crate::classes::test_object::PlayerEntity;
+use crate::classes::player_entity::PlayerEntity;
 use crate::config_lib::c_config::Config;
 use crate::mesh_lib::c_mesh::{Mesh, MeshLine};
 use crate::render_lib::t_screen_data::Screen;
@@ -15,7 +16,7 @@ pub struct GameScene{
 
 impl Scene for GameScene{
 
-    fn create_scene(&mut self, config: &Config, screen: &Screen) {
+    fn create_scene(&mut self, config: &Config, screen: &Screen, assets_db: &AssetsDB) {
 
     }
 

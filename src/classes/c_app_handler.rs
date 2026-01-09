@@ -10,6 +10,7 @@ use winit::{
     event_loop::{ControlFlow, EventLoop},
     window::WindowBuilder,
 };
+use winit::dpi::LogicalSize;
 use winit::event::ElementState;
 use winit::keyboard::PhysicalKey;
 use winit::window::WindowButtons;
@@ -36,7 +37,8 @@ impl AppHandler {
             .build(&event_loop)
             .unwrap()
         );
-        let surface = SurfaceTexture::new(config.x().max(1) as u32, config.y().max(1) as u32, window.clone());
+        let size = window.inner_size(); // physical
+        let surface = SurfaceTexture::new(size.width, size.height, window.clone());
 
         // Теперь это Pixels<'static>
         let mut pixels: Pixels<'static> = Pixels::new(config.x().max(1) as u32, config.y().max(1) as u32, surface).unwrap();

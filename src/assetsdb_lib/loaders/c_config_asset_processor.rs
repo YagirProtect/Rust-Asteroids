@@ -13,10 +13,9 @@ use crate::mesh_lib::c_mesh::Mesh;
 pub struct ConfigLoader{}
 
 impl AssetLoader for ConfigLoader {
-    fn get_extension(&self) -> &str {
-        "cfg"
+    fn get_extension(&self) -> String {
+        "cfg".to_string()
     }
-
 
     fn load_all_assets(&self, files: &Vec<PathBuf>) -> HashMap<String, Asset> {
         let mut data: HashMap<String, Asset> = HashMap::new();
