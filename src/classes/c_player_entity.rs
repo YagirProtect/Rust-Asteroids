@@ -117,9 +117,6 @@ impl Entity for PlayerEntity {
 
     fn update(&mut self, delta_time: f32, input: &Input, config: &Config, assets_db: &AssetsDB) -> Vec<SceneEvent> {
 
-
-        println!("{}", self.transform.get_position());
-
         let mut events = vec![];
 
         if (self.is_hitted){

@@ -6,6 +6,6 @@ pub enum SceneEvent{
     SpawnEntity(Box<dyn Entity>),
     DestroyEntity(u32),
     Collision { a: u32, b: u32 },
-    DemolishAsteroid{pos: Vec2<f32>, scale: f32},
+    DemolishAsteroid{pos: Vec2<f32>, scale: f32, id: u32},
     PlayerDeath
 }

@@ -7,8 +7,10 @@ use crate::assetsdb_lib::e_asset::Asset;
 use crate::mesh_lib::c_mesh::Mesh;
 use crate::assetsdb_lib::loaders::c_config_asset_processor::ConfigLoader;
 use crate::assetsdb_lib::loaders::c_meshes_asset_processor::MeshLoader;
+use crate::assetsdb_lib::loaders::c_sprite_asset_processor::ImageLoader;
 use crate::assetsdb_lib::loaders::t_asset_loader::AssetLoader;
 use crate::assetsdb_lib::t_from_assetref::FromAssetRef;
+use crate::sprite_lib::c_sprite::SpriteTex;
 
 pub struct AssetsDB {
     all_assets_paths: Vec<PathBuf>,
@@ -31,9 +33,18 @@ impl AssetsDB {
         default.create_all_folders();
         default.find_all_assets_drive();
         default.call_loaders();
-
-
         default
+    }
+
+    pub fn load_dynamic(&mut self, ctx: &egui::Context){
+        for n in self.loaders.iter_mut(){
+            let n = n.load_dynamic_assets(&self.all_assets_paths, ctx);
+
+            for (path, value) in n {
+                println!("{}", path);
+                self.map.insert(path, value);
+            }
+        }
     }
 
     pub fn root_folder() -> PathBuf {
@@ -61,7 +72,8 @@ impl AssetsDB {
     fn call_loaders(&mut self) {
         self.loaders = vec![
             Box::new(MeshLoader::default()),
-            Box::new(ConfigLoader::default())
+            Box::new(ConfigLoader::default()),
+            Box::new(ImageLoader::default())
         ];
 
         for loader in self.loaders.iter() {
@@ -107,6 +119,17 @@ impl AssetsDB {
         let mut p = Self::root_folder();
         p = p.join(path);
         self.map.get(p.to_str().unwrap()).and_then(T::from_asset)
+    }
+
+    pub fn get_sprite_by_name(&self, name: &str) -> Option<Rc<SpriteTex>> {
+        self.map.iter().find_map(|(k, v)| match v {
+            Asset::Sprite(m)
+
+            if Path::new(k)
+                .file_stem()
+                .and_then(|s| s.to_str()) == Some(name) => Some(Rc::clone(m)),
+            _ => None,
+        })
     }
 
     pub fn get_mesh_by_name(&self, name: &str) -> Option<Rc<Mesh>> {

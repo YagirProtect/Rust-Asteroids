@@ -1,4 +1,5 @@
 ﻿use std::rc::Rc;
+use rand::Rng;
 use vek::Vec2;
 use crate::assetsdb_lib::c_assets_db::AssetsDB;
 use crate::classes::c_input::Input;
@@ -17,6 +18,7 @@ pub struct AsteroidEntity {
     transform: Transform,
     mesh: Rc<Mesh>,
 
+    rotation: f32,
     is_need_destroy: bool
 }
 
@@ -25,11 +27,17 @@ pub struct AsteroidEntity {
 
 impl AsteroidEntity {
     pub fn new(transform: Transform, mesh: Rc<Mesh>) -> AsteroidEntity {
+        
+        
+        let mut rnd = rand::rng();
+        
         Self{
             id: 0,
             transform,
             mesh,
-            is_need_destroy: false
+            rotation: rnd.random_range(-1.0..1.0)*0.5,
+            is_need_destroy: false,
+            
         }
     }
 
@@ -64,12 +72,14 @@ impl Entity for AsteroidEntity {
     fn update(&mut self, delta_time: f32, input: &Input, config: &Config, assets_db: &AssetsDB) -> Vec<SceneEvent> {
         let mut events = Vec::new();
 
+        self.transform.add_rotation(self.rotation * delta_time);
         self.transform.update_position_by_vel(delta_time);
 
         if (self.is_need_destroy) {
             events.push(SceneEvent::DemolishAsteroid{
                 pos: *self.transform.get_position(),
-                scale: self.transform.get_scale().magnitude()
+                scale: self.transform.get_scale().magnitude(),
+                id: self.id,
             });
             events.push(SceneEvent::DestroyEntity(self.id));
         }

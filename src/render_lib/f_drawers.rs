@@ -1,4 +1,8 @@
-﻿use crate::render_lib::t_screen_data::Screen;
+﻿use std::rc::Rc;
+use egui::load::SizedTexture;
+use vek::Vec2;
+use crate::render_lib::t_screen_data::Screen;
+use crate::sprite_lib::c_sprite::SpriteTex;
 
 pub fn draw_line_thick(screen: &mut Screen, x0f: f32, y0f: f32, x1f: f32, y1f: f32, thickness: i32, color: u32) {
     let x0 = x0f.round() as i32;
@@ -103,4 +107,10 @@ pub fn set_pixel(screen: &mut Screen, x: i32, y: i32, color: u32) {
 
     let pos = x + screen.width() * y;
     screen.get_buffer_mut()[pos] = color;
+}
+
+pub fn ui_draw_icon(ui: &mut egui::Ui, sprite: &Rc<SpriteTex>, size: Vec2<f32>) {
+    let tex = sprite.get_gui_texture();
+    let st = SizedTexture::new(tex.id(), tex.size_vec2());
+    ui.add(egui::Image::from_texture(st).fit_to_exact_size(egui::vec2(size.x, size.y)));
 }

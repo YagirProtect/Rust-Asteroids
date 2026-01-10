@@ -25,15 +25,19 @@ impl Game {
         let config = assets_db.get_any_asset_by_type::<Config>().cloned().unwrap_or_default();
 
         let screen = Screen::new(config.x(), config.y());
-        let scene = make_scene(SceneId::Menu, &config, &screen, &assets_db);
         Self{
             assets_db,
             config,
             screen,
-            scene,
+            scene: Box::new(MenuScene::default()),
         }
     }
 
+    pub fn open_default_scene(&mut self){
+
+        let scene = make_scene(SceneId::Menu, &self.config, &self.screen, &self.assets_db);
+        self.scene = scene;
+    }
 
 
     pub fn update_game(&mut self, delta_time: f32, ctx: &egui::Context, input: &Input) -> bool {
@@ -73,6 +77,7 @@ impl Game {
         None
     }
 
+
     pub fn get_screen(&self) -> &Screen {
         &self.screen
     }
@@ -90,6 +95,10 @@ impl Game {
     
     pub fn get_assets_db(&self) -> &AssetsDB {
         &self.assets_db
+    }
+
+    pub fn get_assets_db_mut(&mut self) -> &mut AssetsDB {
+        &mut self.assets_db
     }
 
     pub fn get_current_scene(&self) -> &Box<dyn Scene> {

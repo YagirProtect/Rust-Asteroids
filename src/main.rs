@@ -7,6 +7,7 @@ mod render_lib;
 mod scenes_lib;
 mod uniq_id_lib;
 mod collisions_lib;
+mod sprite_lib;
 
 use crate::classes::c_app_handler::AppHandler;
 use crate::classes::c_game::Game;

@@ -46,7 +46,7 @@ impl AppHandler {
         let win_size = window.inner_size(); // ФИЗИЧЕСКИЕ пиксели (уже с DPI)
 
         game.get_config_mut().set_actual_size(Vec2::new(win_size.width as usize, win_size.height as usize));
-        
+
         let surface = SurfaceTexture::new(win_size.width.max(1), win_size.height.max(1), window.clone());
 
         let mut pixels = Pixels::new(fb_w, fb_h, surface).unwrap();
@@ -56,6 +56,10 @@ impl AppHandler {
         let egui_ctx = egui::Context::default();
         let viewport_id = egui_ctx.viewport_id();
 
+
+        game.get_assets_db_mut().load_dynamic(&egui_ctx);
+        game.open_default_scene();
+        
         let mut egui_state = EguiWinitState::new(
             egui_ctx,
             viewport_id,
@@ -73,6 +77,7 @@ impl AppHandler {
             1,
         );
         event_loop.set_control_flow(ControlFlow::Poll);
+
 
         let mut last = Instant::now();
         event_loop.run(move |event, elwt| match event {

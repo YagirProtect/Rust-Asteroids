@@ -8,8 +8,20 @@ use crate::scenes_lib::t_scene::Scene;
 use egui::Context;
 
 #[derive(Default)]
+enum MenuTab{
+    #[default]
+    MainScreen,
+    CreditsScreen,
+    LeaderboardScreen
+}
+
+#[derive(Default)]
 pub struct MenuScene{
     entities: Vec<Box<dyn Entity>>,
+
+
+    tab: MenuTab,
+    action: SceneSwitch
 }
 
 impl Scene for MenuScene
@@ -31,12 +43,32 @@ impl Scene for MenuScene
 
 
     fn ui(&mut self, ctx: &Context) -> SceneSwitch {
-        
-        let mut action = SceneSwitch::None;
-        
-        
+
+        self.action = SceneSwitch::None;
+
+        match self.tab {
+            MenuTab::MainScreen => {
+                self.draw_main_screen(ctx);
+            }
+            MenuTab::CreditsScreen => {
+
+            }
+            MenuTab::LeaderboardScreen => {
+
+            }
+        }
+
+
+
+        self.action
+    }
+
+}
+
+impl MenuScene {
+    fn draw_main_screen(&mut self, ctx: &Context) {
         let frame = egui::Frame::none()
-            .fill(egui::Color32::from_rgba_unmultiplied(20, 20, 20, 20))
+            .fill(egui::Color32::from_rgba_unmultiplied(0, 0, 0, 0))
             .stroke(egui::Stroke::NONE);
 
         egui::CentralPanel::default()
@@ -45,7 +77,6 @@ impl Scene for MenuScene
                 ui.with_layout(
                     egui::Layout::top_down_justified(egui::Align::Center),
                     |ui| {
-
                         ui.add_space(ui.available_height() * 0.15);
                         ui.vertical_centered(|ui| {
                             ui.label(
@@ -70,13 +101,12 @@ impl Scene for MenuScene
                                     if ui.add(egui::Button::new(label).min_size(btn_size)).clicked() {
                                         match label {
                                             "Exit" => {
-                                                action = SceneSwitch::Quit;
+                                                self.action = SceneSwitch::Quit;
                                             }
-                                            "Play" =>{
-                                                action = SceneSwitch::Switch(SceneId::Game);
+                                            "Play" => {
+                                                self.action = SceneSwitch::Switch(SceneId::Game);
                                             }
-                                            _ =>{
-                                            }
+                                            _ => {}
                                         };
                                     }
                                     ui.add_space(8.0);
@@ -86,9 +116,6 @@ impl Scene for MenuScene
                     },
                 );
             });
-
-        action
     }
-
 }
 
