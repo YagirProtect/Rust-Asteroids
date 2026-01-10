@@ -29,6 +29,7 @@ impl MeshLine {
 #[derive(Serialize, Deserialize, Clone)]
 #[derive(Default)]
 pub struct Mesh{
+    name: String,
     points: Vec<MeshLine>,
     filled: bool
 }
@@ -53,9 +54,11 @@ impl FromAssetRef for Mesh {
 }
 
 impl Mesh {
-    pub fn new(points: Vec<MeshLine>, filled: bool) -> Mesh {
-        Mesh { points, filled }
+    pub fn new(name: String, points: Vec<MeshLine>, filled: bool) -> Mesh {
+        Mesh { name, points, filled }
     }
-    pub fn get_points(&self) -> &Vec<MeshLine> { &self.points }
+    pub fn get_lines(&self) -> &Vec<MeshLine> { &self.points }
+    
+    pub fn get_name(&self) -> &String { &self.name }
 }
 

@@ -12,7 +12,7 @@ pub trait Drawable{
     fn draw_mesh(&self, screen: &mut Screen, transform: &Transform, mesh: &Mesh){
 
         if (!mesh.is_filled()) {
-            mesh.get_points().iter().for_each(|point|{
+            mesh.get_lines().iter().for_each(|point|{
                 let start = transform.transform_point_to_world(point.start);
                 let end = transform.transform_point_to_world(point.end);
 

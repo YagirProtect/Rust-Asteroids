@@ -22,7 +22,7 @@ impl AssetLoader for MeshLoader{
             match file.extension(){
                 Some(ext) => {
                     if (ext.to_str().unwrap() == self.get_extension()){
-                        let mut mesh = Mesh::new(vec![], false);
+                        let mut mesh = Mesh::new("".to_string(),vec![], false);
                         if (mesh.read_file(file.clone())){
                             data.insert(file.to_str().unwrap().to_string(), Asset::Mesh(Rc::new(mesh)));
                         }

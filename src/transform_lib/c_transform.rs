@@ -30,9 +30,16 @@ impl Transform {
     pub fn rotate_to(&mut self, z: f32) {
         self.rotation = z;
     }
-
+    pub fn get_position(&self) -> &Vec2<f32> {
+        return &self.position
+    }
     pub fn update_position_by_vel(&mut self, delta_time: f32) {
         self.update_position_warp(self.position + self.velocity * delta_time);
+    }
+
+
+    pub fn get_scale(&self) -> &Vec2<f32> {
+        return &self.scale
     }
 
     pub fn update_position_warp(&mut self, pos: Vec2<f32>){

@@ -1,6 +1,7 @@
 ﻿use crate::assetsdb_lib::c_assets_db::AssetsDB;
 use crate::classes::c_input::Input;
 use crate::classes::t_entity::Entity;
+use crate::collisions_lib::col_solver::solve_collision;
 use crate::config_lib::c_config::Config;
 use crate::render_lib::t_screen_data::Screen;
 use crate::scenes_lib::e_scene_event::SceneEvent;
@@ -19,14 +20,21 @@ pub trait Scene {
     fn update_entity(&mut self, dt: f32, input: &Input, config: &Config, assets_db: &AssetsDB) {
 
         let mut commands = vec![];
-        let entity = self.get_entities_mut();
 
+        let collisions_events = solve_collision(self.get_entities_mut());
+
+
+        commands.extend(collisions_events);
+
+        let entity = self.get_entities_mut();
         for e in entity.iter_mut() {
             let cmds = e.update(dt, input, config, assets_db);
 
             commands.extend(cmds);
         }
 
+
+        self.custom_events_solve(&commands, &config, assets_db);
 
         for command in commands {
             match command {
@@ -37,8 +45,15 @@ pub trait Scene {
                 SceneEvent::DestroyEntity(id) => {
                     self.remove_entity(id)
                 }
+                SceneEvent::Collision { a, b } => {
+                }
+                _ => {}
             }
         }
+    }
+
+    fn custom_events_solve(&mut self, scene_event: &Vec<SceneEvent>, config: &Config, assets_db: &AssetsDB){
+
     }
 
 
@@ -47,16 +62,22 @@ pub trait Scene {
             e.draw(screen);
         }
     }
-    fn ui(&mut self, _ctx: &egui::Context) {}
+    fn ui(&mut self, _ctx: &egui::Context) -> SceneSwitch {
+        SceneSwitch::None
+    }
 
 
 
     fn get_entities(&self) -> &Vec<Box<dyn Entity>>;
     fn get_entities_mut(&mut self) -> &mut Vec<Box<dyn Entity>>;
-    fn add_entity(&mut self, mut entity: Box<dyn Entity>){
+    fn add_entity(&mut self, mut entity: Box<dyn Entity>) -> u32{
 
-        entity.set_entity_id(get_uniq_id());
+        let id = get_uniq_id();
+
+        entity.set_entity_id(id);
         self.get_entities_mut().push(entity);
+
+        id
     }
     fn remove_entity(&mut self, entity_id: u32){
         for (i, val) in self.get_entities().iter().enumerate() {

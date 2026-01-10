@@ -9,6 +9,8 @@ use crate::transform_lib::c_transform::Transform;
 use std::rc::Rc;
 use vek::Vec2;
 use crate::assetsdb_lib::c_assets_db::AssetsDB;
+use crate::collisions_lib::e_col_layers::ColLayer;
+use crate::collisions_lib::t_collision::Collide;
 use crate::scenes_lib::e_scene_event::SceneEvent::DestroyEntity;
 
 pub struct BulletEntity {
@@ -23,6 +25,20 @@ pub struct BulletEntity {
 impl Drawable for BulletEntity {
     fn draw(&mut self, screen: &mut Screen) {
         self.draw_mesh(screen, &self.transform, &self.mesh);
+    }
+}
+
+impl Collide for BulletEntity {
+    fn get_collision_layer(&self) -> ColLayer {
+        ColLayer::BulletPlayer
+    }
+
+    fn get_collision_mesh(&self) -> Option<(Rc<Mesh>, &Transform)> {
+        Some((self.mesh.clone(), &self.transform))
+    }
+
+    fn on_collision(&mut self, layer: ColLayer) {
+        self.timer = 1000.0;
     }
 }
 
@@ -42,15 +58,17 @@ impl Entity for BulletEntity {
 
         self.timer += delta_time;
 
-        if (self.timer > 3.0){
+        if (self.timer > 0.5){
             
             return vec![
                 DestroyEntity(self.id),
             ]
         }
-        
-        
         vec![]
+    }
+
+    fn get_position(&self) ->  &Vec2<f32> {
+        self.transform.get_position()
     }
 }
 

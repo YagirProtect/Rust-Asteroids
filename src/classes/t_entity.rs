@@ -1,10 +1,12 @@
-﻿use crate::assetsdb_lib::c_assets_db::AssetsDB;
+﻿use vek::Vec2;
+use crate::assetsdb_lib::c_assets_db::AssetsDB;
 use crate::classes::c_input::Input;
+use crate::collisions_lib::t_collision::Collide;
 use crate::config_lib::c_config::Config;
 use crate::render_lib::t_drawable::Drawable;
 use crate::scenes_lib::e_scene_event::SceneEvent;
 
-pub trait Entity : Drawable{
+pub trait Entity : Drawable + Collide{
     
     fn set_entity_id(&mut self, entity_id: u32);
     
@@ -13,4 +15,6 @@ pub trait Entity : Drawable{
     fn update(&mut self, delta_time: f32, input: &Input, config: &Config, assets_db: &AssetsDB) -> Vec<SceneEvent> {
         vec![]
     }
+
+    fn get_position(&self) -> &Vec2<f32>;
 }

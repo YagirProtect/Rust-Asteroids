@@ -5,6 +5,7 @@ use std::sync::Arc;
 use egui_wgpu::Renderer as EguiRenderer;
 use egui_winit::State as EguiWinitState;
 use pixels::{wgpu, Pixels, SurfaceTexture};
+use vek::Vec2;
 use winit::{
     event::{Event, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
@@ -27,21 +28,28 @@ impl AppHandler {
     pub fn run(&mut self, game: &mut Game, input: &mut Input) {
         let config = game.get_config();
 
+        let fb_w = config.x().max(1) as u32;
+        let fb_h = config.y().max(1) as u32;
+
         let event_loop = EventLoop::new().unwrap();
 
         let window = Arc::new(
             WindowBuilder::new()
-            .with_title("Asteroids")
-            .with_resizable(false)
-            .with_enabled_buttons(WindowButtons::CLOSE | WindowButtons::MINIMIZE)
-            .build(&event_loop)
-            .unwrap()
+                .with_title("Asteroids")
+                .with_resizable(false)
+                .with_inner_size(LogicalSize::new(config.x() as u32, config.y() as u32))
+                .with_enabled_buttons(WindowButtons::CLOSE | WindowButtons::MINIMIZE)
+                .build(&event_loop)
+                .unwrap()
         );
-        let size = window.inner_size(); // physical
-        let surface = SurfaceTexture::new(size.width, size.height, window.clone());
 
-        // Теперь это Pixels<'static>
-        let mut pixels: Pixels<'static> = Pixels::new(config.x().max(1) as u32, config.y().max(1) as u32, surface).unwrap();
+        let win_size = window.inner_size(); // ФИЗИЧЕСКИЕ пиксели (уже с DPI)
+
+        game.get_config_mut().set_actual_size(Vec2::new(win_size.width as usize, win_size.height as usize));
+        
+        let surface = SurfaceTexture::new(win_size.width.max(1), win_size.height.max(1), window.clone());
+
+        let mut pixels = Pixels::new(fb_w, fb_h, surface).unwrap();
         pixels.enable_vsync(false);
 
 
@@ -57,7 +65,6 @@ impl AppHandler {
         );
 
 
-
         // egui-wgpu renderer: важно использовать формат surface, который реально рисуется в окно.
         let mut egui_renderer = EguiRenderer::new(
             pixels.device(),
@@ -69,12 +76,11 @@ impl AppHandler {
 
         let mut last = Instant::now();
         event_loop.run(move |event, elwt| match event {
-            Event::WindowEvent { ref event, .. } => {
 
+            Event::WindowEvent { ref event, .. } => {
                 let consumed = egui_state.on_window_event(&window, event).consumed;
 
                 match event {
-
                     WindowEvent::KeyboardInput { event, .. } => {
                         let is_down = event.state == ElementState::Pressed;
 
@@ -82,7 +88,21 @@ impl AppHandler {
                             input.on_key(code, is_down);
                         }
                     }
+                    WindowEvent::Resized(size) => {
+                        let w = size.width.max(1);
+                        let h = size.height.max(1);
 
+                        pixels.resize_surface(w, h).unwrap();
+                        pixels.resize_buffer(w, h).unwrap(); // <- ключевое: убирает “квадратик”
+
+                        game.get_screen_mut().resize(w, h); // ты добавишь этот метод
+                    }
+
+                    WindowEvent::ScaleFactorChanged { scale_factor, .. } => {
+                        // для egui (чтобы мышь/размеры совпали)
+                        egui_state.egui_ctx().set_pixels_per_point(*scale_factor as f32);
+                        // surface/buffer обычно корректно прилетает через Resized сразу после.
+                    }
                     WindowEvent::CloseRequested => { elwt.exit(); }
                     WindowEvent::RedrawRequested => {
                         let now = Instant::now();
@@ -95,7 +115,8 @@ impl AppHandler {
                         egui_state.egui_ctx().begin_frame(egui_input);
 
 
-                        {///LOGIC
+                        {
+                            ///LOGIC
                             input.update(dt);
                             if (!game.update_game(dt, &egui_state.egui_ctx(), &input)) {
                                 elwt.exit();
@@ -133,7 +154,6 @@ impl AppHandler {
                         for id in &textures_delta.free {
                             egui_renderer.free_texture(id);
                         }
-
 
 
                         let res = pixels.render_with(|encoder, render_target, context| {
@@ -174,7 +194,6 @@ impl AppHandler {
                             // например, если сворачиваешь окно/теряется surface
                             // можно просто игнорировать кадр
                         }
-
                     }
 
                     _ => {}

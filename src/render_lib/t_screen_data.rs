@@ -16,6 +16,12 @@ impl Screen {
         }
     }
 
+    pub fn resize(&mut self, w: u32, h: u32) {
+        self.width = w as usize;
+        self.height = h as usize;
+        self.buffer.resize(self.width * self.height, 0);
+    }
+
     pub fn flush(&mut self) {
         self.buffer.fill(15);
     }

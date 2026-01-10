@@ -2,7 +2,10 @@
 use crate::classes::t_entity::Entity;
 use crate::config_lib::c_config::Config;
 use crate::render_lib::t_screen_data::Screen;
+use crate::scenes_lib::e_scene_switch::SceneSwitch;
+use crate::scenes_lib::e_sceneid::SceneId;
 use crate::scenes_lib::t_scene::Scene;
+use egui::Context;
 
 #[derive(Default)]
 pub struct MenuScene{
@@ -26,6 +29,66 @@ impl Scene for MenuScene
         &mut self.entities
     }
 
+
+    fn ui(&mut self, ctx: &Context) -> SceneSwitch {
+        
+        let mut action = SceneSwitch::None;
+        
+        
+        let frame = egui::Frame::none()
+            .fill(egui::Color32::from_rgba_unmultiplied(20, 20, 20, 20))
+            .stroke(egui::Stroke::NONE);
+
+        egui::CentralPanel::default()
+            .frame(frame)
+            .show(ctx, |ui| {
+                ui.with_layout(
+                    egui::Layout::top_down_justified(egui::Align::Center),
+                    |ui| {
+
+                        ui.add_space(ui.available_height() * 0.15);
+                        ui.vertical_centered(|ui| {
+                            ui.label(
+                                egui::RichText::new("ASTEROIDS")
+                                    .size(80.0)
+                                    .strong(),
+                            );
+                        });
+
+                        ui.add_space(ui.available_height() * 0.25);
+
+                        ui.scope(|ui| {
+                            ui.style_mut().text_styles.insert(
+                                egui::TextStyle::Button,
+                                egui::FontId::proportional(24.0),
+                            );
+
+                            ui.vertical_centered(|ui| {
+                                let btn_size = egui::vec2(260.0, 30.0);
+
+                                for label in ["Play", "Scores", "Credits", "Exit"] {
+                                    if ui.add(egui::Button::new(label).min_size(btn_size)).clicked() {
+                                        match label {
+                                            "Exit" => {
+                                                action = SceneSwitch::Quit;
+                                            }
+                                            "Play" =>{
+                                                action = SceneSwitch::Switch(SceneId::Game);
+                                            }
+                                            _ =>{
+                                            }
+                                        };
+                                    }
+                                    ui.add_space(8.0);
+                                }
+                            });
+                        });
+                    },
+                );
+            });
+
+        action
+    }
 
 }
 
