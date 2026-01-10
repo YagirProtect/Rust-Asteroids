@@ -16,7 +16,9 @@ use crate::mesh_lib::c_mesh::Mesh;
 use crate::render_lib::f_drawers::ui_draw_icon;
 use crate::scenes_lib::e_scene_event::SceneEvent;
 use crate::scenes_lib::e_scene_switch::SceneSwitch;
+use crate::scenes_lib::e_sceneid::SceneId;
 use crate::sprite_lib::c_sprite::SpriteTex;
+use crate::web_lib::c_web_client::WebClient;
 
 #[derive(Default)]
 pub enum GameState{
@@ -32,11 +34,13 @@ pub struct GameScene {
     asteroids_ids: Vec<u32>,
     player_id: u32,
     asteroids_models: Vec<Rc<Mesh>>,
+    web_client: WebClient,
+
 
     state: GameState,
     player_healths: i8,
     scores: u32,
-    health_icon: Rc<SpriteTex>
+    health_icon: Rc<SpriteTex>,
 }
 
 impl GameScene {
@@ -98,7 +102,10 @@ impl GameScene {
 
         self.asteroids_ids.push(id);
     }
+
+
 }
+
 
 impl Scene for GameScene
 {
@@ -124,9 +131,6 @@ impl Scene for GameScene
 
 
         self.health_icon = assets_db.get_sprite_by_name("heart").unwrap_or_default();
-
-        println!("has icon: {:?}", assets_db.get_sprite_by_name("heart").is_some());
-
         self.player_id = self.add_entity(Box::new(player));
 
         self.spawn_asteroids(&config);
@@ -159,8 +163,7 @@ impl Scene for GameScene
                     self.player_healths -= 1;
                     if (self.player_healths <= 0) {
                         self.state = GameState::End;
-
-                        self.entities.clear();
+                        self.remove_entity(self.player_id);
                     }
                 }
                 _=>{}
@@ -174,28 +177,25 @@ impl Scene for GameScene
 
     fn ui(&mut self, ctx: &Context) -> SceneSwitch {
         match self.state {
-            GameState::Active =>{
+            GameState::Active => {
                 let frame = egui::Frame::none()
                     .fill(egui::Color32::from_rgba_unmultiplied(0, 0, 0, 0))
                     .stroke(egui::Stroke::NONE);
-                egui::TopBottomPanel::bottom("bottom_data")
+                egui::TopBottomPanel::top("bottom_data")
                     .frame(frame)
                     .show_separator_line(false)
                     .min_height(35.0)
                     .show(ctx, |ui| {
                         ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
-                            // LEFT
                             ui.label(
                                 egui::RichText::new(format!("SCORES: {}", self.scores))
                                     .size(20.0)
                                     .strong(),
                             );
 
-                            // SPRING: забираем всё оставшееся место
                             let space = ui.available_width();
-                            ui.add_space(space-(30.0*self.player_healths as f32));
+                            ui.add_space(space - (30.0 * self.player_healths as f32));
 
-                            // RIGHT
                             ui.horizontal(|ui| {
                                 for _ in 0..self.player_healths {
                                     ui_draw_icon(ui, &self.health_icon, Vec2::new(20.0, 20.0));
@@ -205,7 +205,85 @@ impl Scene for GameScene
                     });
             }
             GameState::End => {
+                let can_send = self.web_client.is_available_name();
+                let mut nickname = self.web_client.get_nickname();
 
+                let frame = egui::Frame::none()
+                    .fill(egui::Color32::from_rgba_unmultiplied(0,0,0,0))
+                    .stroke(egui::Stroke::new(2.0, egui::Color32::from_rgb(80, 80, 80)));
+
+                let btn_size = egui::vec2(260.0, 30.0);
+                let mut scene_switch = SceneSwitch::None;
+
+                egui::CentralPanel::default().frame(frame).show(ctx, |ui| {
+                    let avail = ui.max_rect();
+
+                    let win_size = egui::vec2(520.0, 360.0);
+                    let mut rect = egui::Rect::from_center_size(avail.center(), win_size);
+
+                    rect.min.x = rect.min.x.round();
+                    rect.min.y = rect.min.y.round();
+                    rect.max.x = rect.max.x.round();
+                    rect.max.y = rect.max.y.round();
+
+                    let frame = egui::Frame::none()
+                        .fill(egui::Color32::from_rgba_unmultiplied(20, 20, 20, 220))
+                        .stroke(egui::Stroke::new(2.0, egui::Color32::from_rgb(80, 80, 80)))
+                        .rounding(egui::Rounding::same(12.0))
+                        .inner_margin(egui::Margin::same(18.0));
+
+                    ui.allocate_ui_at_rect(rect, |ui| {
+                        frame.show(ui, |ui| {
+                            ui.vertical_centered(|ui| {
+                                ui.label(
+                                    egui::RichText::new(format!("SCORES\n{:06}", self.scores))
+                                        .size(64.0)
+                                        .strong(),
+                                );
+
+                                ui.add_space(18.0);
+
+                                ui.label(egui::RichText::new("Enter your nickname").size(20.0));
+                                ui.add_space(8.0);
+
+                                let resp = ui.add_sized(
+                                    [320.0, 40.0],
+                                    egui::TextEdit::singleline(&mut nickname)
+                                        .hint_text("Name...")
+                                        .font(egui::FontId::proportional(26.0)),
+                                );
+
+                                if (resp.changed()) {
+                                    self.web_client.change_nickname(nickname);
+                                }
+                                ui.add_space(18.0);
+
+
+                                ui.add_enabled_ui(can_send, |ui| {
+                                    if ui
+                                        .add_sized(btn_size, egui::Button::new(egui::RichText::new("Send").size(22.0).strong()))
+                                        .clicked()
+                                    {
+                                        self.web_client.send_web_data(self.scores);
+                                        scene_switch = SceneSwitch::Switch(SceneId::Menu);
+                                    }
+                                });
+
+                                ui.add_space(10.0);
+
+                                if ui
+                                    .add_sized(btn_size, egui::Button::new(egui::RichText::new("Menu").size(22.0).strong()))
+                                    .clicked()
+                                {
+                                    scene_switch = SceneSwitch::Switch(SceneId::Menu);
+                                }
+                            });
+                        });
+                    });
+                });
+
+
+                return scene_switch;
             }
         }
 
@@ -226,4 +304,6 @@ impl Scene for GameScene
 
 
 }
+
+
 

@@ -52,7 +52,6 @@ impl AppHandler {
         let mut pixels = Pixels::new(fb_w, fb_h, surface).unwrap();
         pixels.enable_vsync(false);
 
-
         let egui_ctx = egui::Context::default();
         let viewport_id = egui_ctx.viewport_id();
 
