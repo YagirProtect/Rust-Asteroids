@@ -1,0 +1,16 @@
+{
+  "name": "bullet",
+  "points": [
+    {
+      "start": {
+        "x": 15.0,
+        "y": 0.0
+      },
+      "end": {
+        "x": -15.0,
+        "y": 0.0
+      }
+    }
+  ],
+  "filled": false
+}

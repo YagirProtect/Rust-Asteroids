@@ -1,6 +1,7 @@
 ﻿use crate::classes::c_game::Game;
 
 use std::{error::Error, time::Instant};
+use std::path::Path;
 use std::sync::Arc;
 use egui_wgpu::Renderer as EguiRenderer;
 use egui_winit::State as EguiWinitState;
@@ -14,7 +15,7 @@ use winit::{
 use winit::dpi::LogicalSize;
 use winit::event::ElementState;
 use winit::keyboard::PhysicalKey;
-use winit::window::WindowButtons;
+use winit::window::{Icon, Window, WindowButtons};
 use crate::classes::c_input::Input;
 
 #[derive(Copy, Clone, Default)]
@@ -43,7 +44,10 @@ impl AppHandler {
                 .unwrap()
         );
 
-        let win_size = window.inner_size(); // ФИЗИЧЕСКИЕ пиксели (уже с DPI)
+        set_window_icon_from_png(&window, "data/icons/icon.png");
+
+        
+        let win_size = window.inner_size(); // Physical Pixels
 
         game.get_config_mut().set_actual_size(Vec2::new(win_size.width as usize, win_size.height as usize));
 
@@ -68,7 +72,6 @@ impl AppHandler {
         );
 
 
-        // egui-wgpu renderer: важно использовать формат surface, который реально рисуется в окно.
         let mut egui_renderer = EguiRenderer::new(
             pixels.device(),
             pixels.surface_texture_format(),
@@ -97,15 +100,13 @@ impl AppHandler {
                         let h = size.height.max(1);
 
                         pixels.resize_surface(w, h).unwrap();
-                        pixels.resize_buffer(w, h).unwrap(); // <- ключевое: убирает “квадратик”
+                        pixels.resize_buffer(w, h).unwrap();
 
-                        game.get_screen_mut().resize(w, h); // ты добавишь этот метод
+                        game.get_screen_mut().resize(w, h);
                     }
 
                     WindowEvent::ScaleFactorChanged { scale_factor, .. } => {
-                        // для egui (чтобы мышь/размеры совпали)
                         egui_state.egui_ctx().set_pixels_per_point(*scale_factor as f32);
-                        // surface/buffer обычно корректно прилетает через Resized сразу после.
                     }
                     WindowEvent::CloseRequested => { elwt.exit(); }
                     WindowEvent::RedrawRequested => {
@@ -151,7 +152,6 @@ impl AppHandler {
                             pixels_per_point: full.pixels_per_point,
                         };
 
-                        // обновляем текстуры egui (шрифты/картинки)
                         for (id, image_delta) in &textures_delta.set {
                             egui_renderer.update_texture(pixels.device(), pixels.queue(), *id, image_delta);
                         }
@@ -161,10 +161,10 @@ impl AppHandler {
 
 
                         let res = pixels.render_with(|encoder, render_target, context| {
-                            // 1) отрисовать пиксельный буфер (то, что ты залил в pixels.frame_mut())
+                            // 1) rendering pixels
                             context.scaling_renderer.render(encoder, render_target);
 
-                            // 2) подготовить буферы egui
+                            // 2) prepare egui buffer
                             let _user_cmds = egui_renderer.update_buffers(
                                 pixels.device(),
                                 pixels.queue(),
@@ -173,7 +173,7 @@ impl AppHandler {
                                 &screen_descriptor,
                             );
 
-                            // 3) отрисовать egui поверх (LoadOp::Load — НЕ затирать картинку)
+                            // 3) overlay draw egui
                             let mut pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                                 label: Some("egui_pass"),
                                 color_attachments: &[Some(wgpu::RenderPassColorAttachment {
@@ -194,10 +194,7 @@ impl AppHandler {
                             Ok(())
                         });
 
-                        if res.is_err() {
-                            // например, если сворачиваешь окно/теряется surface
-                            // можно просто игнорировать кадр
-                        }
+                        if res.is_err() {}
                     }
 
                     _ => {}
@@ -212,7 +209,6 @@ impl AppHandler {
 }
 
 fn blit_u32_to_rgba_bytes(dst_rgba: &mut [u8], src_u32: &[u32]) {
-    // пример: считаем, что src = 0x00RRGGBB (без альфы)
     for (dst, &p) in dst_rgba.chunks_exact_mut(4).zip(src_u32.iter()) {
         let r = ((p >> 16) & 0xFF) as u8;
         let g = ((p >> 8) & 0xFF) as u8;
@@ -221,5 +217,20 @@ fn blit_u32_to_rgba_bytes(dst_rgba: &mut [u8], src_u32: &[u32]) {
         dst[1] = g;
         dst[2] = b;
         dst[3] = 0xFF;
+    }
+}
+
+fn load_window_icon(path: impl AsRef<Path>) -> Result<Icon, Box<dyn Error>> {
+    let img = image::open(path)?.into_rgba8();
+    let (w, h) = img.dimensions();
+    let rgba = img.into_raw(); // Vec<u8> RGBA
+
+    let icon = Icon::from_rgba(rgba, w, h)?;
+    Ok(icon)
+}
+pub fn set_window_icon_from_png(window: &Window, path: impl AsRef<Path>) {
+    match load_window_icon(path) {
+        Ok(icon) => window.set_window_icon(Some(icon)),
+        Err(e) => eprintln!("icon load failed: {e}"),
     }
 }

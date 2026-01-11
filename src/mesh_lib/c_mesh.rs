@@ -1,15 +1,9 @@
-﻿use std::fs::File;
-use std::io::BufReader;
-use std::path::PathBuf;
-use serde::{Deserialize, Serialize};
-use vek::{Lerp, Vec2};
-use crate::assetsdb_lib::e_asset::Asset;
-use crate::assetsdb_lib::json_utils::{read_json_file, ReadJsonError};
+﻿use crate::assetsdb_lib::e_asset::Asset;
 use crate::assetsdb_lib::t_file_readable::FileReadable;
 use crate::assetsdb_lib::t_file_writable::FileWritable;
 use crate::assetsdb_lib::t_from_assetref::FromAssetRef;
-use crate::render_lib::t_drawable::Drawable;
-use crate::render_lib::t_screen_data::Screen;
+use serde::{Deserialize, Serialize};
+use vek::Vec2;
 
 #[derive(Serialize, Deserialize, Copy, Clone)]
 pub struct MeshLine{

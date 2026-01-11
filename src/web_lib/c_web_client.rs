@@ -81,7 +81,7 @@ impl WebClient {
         if let Some(rx) = &self.lb_rx {
             if let Ok(new_state) = rx.try_recv() {
                 self.leaderboard = new_state;
-                self.lb_rx = None; // запрос завершён
+                self.lb_rx = None;
             }
         }
     }

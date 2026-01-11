@@ -73,7 +73,6 @@ pub fn solve_collision(entity: &mut Vec<Box<dyn Entity>>) -> Vec<SceneEvent> {
                 (ea.get_collision_layer(), eb.get_collision_layer())
             };
 
-            // теперь по одному mutable за раз
             if let Some(ea) = entity.iter_mut().find(|e| e.get_entity_id() == *a) {
                 ea.on_collision(layer_b);
             }
@@ -115,13 +114,11 @@ pub fn seg_intersect(a: vek::Vec2<f32>, b: vek::Vec2<f32>, c: vek::Vec2<f32>, d:
     let o3 = orient(c, d, a);
     let o4 = orient(c, d, b);
 
-    // общий случай (строгое пересечение)
     if (o1 > eps && o2 < -eps || o1 < -eps && o2 > eps) &&
         (o3 > eps && o4 < -eps || o3 < -eps && o4 > eps) {
         return true;
     }
 
-    // касания/коллинеарность
     if o1.abs() <= eps && on_segment(a, b, c, eps) { return true; }
     if o2.abs() <= eps && on_segment(a, b, d, eps) { return true; }
     if o3.abs() <= eps && on_segment(c, d, a, eps) { return true; }

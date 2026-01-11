@@ -57,7 +57,7 @@ impl PlayerEntity {
     }
 
     fn create_thruster_mesh(dist: f32, wobble: f32) -> Mesh {
-        let mut procedurialTrusterMesh = Mesh::new(
+        let procedural_truster_mesh = Mesh::new(
             "thruster".to_string(),
             vec![
                 MeshLine::new(Vec2::new(-80.0, 30.0), Vec2::new(dist-80.0, wobble)),
@@ -65,7 +65,7 @@ impl PlayerEntity {
             ],
             false
         );
-        procedurialTrusterMesh
+        procedural_truster_mesh
     }
 }
 

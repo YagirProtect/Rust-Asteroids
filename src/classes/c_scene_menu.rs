@@ -77,7 +77,7 @@ impl MenuScene {
                 ui.with_layout(
                     egui::Layout::top_down_justified(egui::Align::Center),
                     |ui| {
-                        ui_header(ui, "ASTEROID");
+                        ui_header(ui, "ASTEROIDS");
 
                         ui.add_space(ui.available_height() * 0.25);
 
@@ -88,7 +88,6 @@ impl MenuScene {
                             );
 
                             ui.vertical_centered(|ui| {
-                                let btn_size = egui::vec2(260.0, 30.0);
 
                                 for label in ["Play", "Leaderboard", "Credits", "Exit"] {
                                     if ui_button(ui, label) {
@@ -155,9 +154,7 @@ impl MenuScene {
                         egui::ScrollArea::vertical()
                             .auto_shrink([false, false])
                             .show(ui, |ui| {
-                                // пример: заменишь на свой источник
-                                let leaderboard_data = self.web_client.get_leaderboard(); // <- сделай метод/поле как удобно
-
+                                let leaderboard_data = self.web_client.get_leaderboard();
 
                                 match leaderboard_data {
                                     LeaderboardState::Idle => {}
@@ -171,10 +168,8 @@ impl MenuScene {
                                                 ui.label(format!("{:>2}", i + 1));
                                                 ui.add_space(12.0);
 
-                                                // имя слева
                                                 ui.label(&e.name);
 
-                                                // score справа
                                                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                                                     ui.label(format!("{}", e.score));
                                                 });

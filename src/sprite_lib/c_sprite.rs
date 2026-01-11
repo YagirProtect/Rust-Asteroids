@@ -8,7 +8,6 @@ use crate::mesh_lib::c_mesh::Mesh;
 #[derive(Default)]
 pub struct SpriteTex {
     name: String,
-    size: Vec2<u32>,
     image: RgbaImage,
     gui_texture: Option<egui::TextureHandle>
 }
@@ -42,7 +41,6 @@ impl SpriteTex {
 
         Self{
             name: path.to_str().unwrap().to_string(),
-            size: Vec2::new(img.width(), img.height()),
             image: img,
             gui_texture: None,
         }

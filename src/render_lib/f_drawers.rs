@@ -12,7 +12,6 @@ pub fn draw_line_thick(screen: &mut Screen, x0f: f32, y0f: f32, x1f: f32, y1f: f
     let y1 = y1f.round() as i32;
 
     let t = thickness.max(1);
-    // оффсеты дают ровно t пикселей: например t=4 => -1..=2 (4 штуки)
     let neg = (t - 1) / 2;
     let pos = t / 2;
 
@@ -43,7 +42,6 @@ pub fn draw_line_thick(screen: &mut Screen, x0f: f32, y0f: f32, x1f: f32, y1f: f
         let mut y = y0;
 
         for x in x0..=x1 {
-            // толщина: вертикальный штамп
             for oy in -neg..=pos {
                 set_pixel(screen, x, y + oy, color);
             }
@@ -70,7 +68,6 @@ pub fn draw_line_thick(screen: &mut Screen, x0f: f32, y0f: f32, x1f: f32, y1f: f
         let mut x = x0;
 
         for y in y0..=y1 {
-            // толщина: горизонтальный штамп
             for ox in -neg..=pos {
                 set_pixel(screen, x + ox, y, color);
             }
