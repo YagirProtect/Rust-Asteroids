@@ -12,8 +12,10 @@ use crate::scenes_lib::t_scene::Scene;
 use crate::transform_lib::c_transform::Transform;
 use rand::seq::IteratorRandom;
 use vek::Vec2;
+use crate::classes::c_audio_context::AudioContext;
 use crate::classes::c_debris_entity::DebrisEntity;
 use crate::classes::c_enemy_entity::EnemyEntity;
+use crate::collisions_lib::e_col_layers::ColLayer;
 use crate::mesh_lib::c_mesh::Mesh;
 use crate::render_lib::f_drawers::{ui_button, ui_draw_icon, ui_get_card_rect, ui_title_rect, ui_transparent_frame};
 use crate::scenes_lib::e_scene_event::SceneEvent;
@@ -47,7 +49,9 @@ pub struct GameScene {
 
     enemy_timer: f32,
 
-    asteroids_count: u32
+    asteroids_count: u32,
+
+    audio_context: AudioContext
 }
 
 impl GameScene {
@@ -197,6 +201,7 @@ impl Scene for GameScene
             assets_db.get_mesh_by_name("player").unwrap_or_default()
         );
 
+        self.audio_context = AudioContext::new();
         self.player_healths = 3;
 
 
@@ -243,6 +248,8 @@ impl Scene for GameScene
             match n {
                 SceneEvent::DemolishAsteroid { pos, scale, id  } => {
 
+                    self.audio_context.beep_asteroid_hit();
+
                     self.scores += (*scale  * 50.0) as u32;
 
                     if let Some(i) = self.asteroids_ids.iter().position(|x| *x == *id) {
@@ -262,6 +269,8 @@ impl Scene for GameScene
 
                 },
                 SceneEvent::PlayerDeath =>{
+                    self.audio_context.beep_death();
+
                     self.player_healths -= 1;
                     if (self.player_healths <= 0) {
                         self.state = GameState::End;
@@ -270,6 +279,13 @@ impl Scene for GameScene
                 }
                 SceneEvent::SpawnDebris(pos) =>{
                     self.spawn_debris(*pos, config, asset_db);
+                }
+                SceneEvent::Shoot(layer) =>{
+                    if (*layer == ColLayer::BulletPlayer){
+                        self.audio_context.beep_shoot()
+                    }else{
+                        self.audio_context.beep_shoot_enemy()
+                    }
                 }
                 _=>{}
             }

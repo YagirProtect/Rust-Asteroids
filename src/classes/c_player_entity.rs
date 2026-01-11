@@ -223,6 +223,7 @@ impl PlayerEntity {
 
 
         events.push(SpawnEntity(Box::new(bullet)));
+        events.push(SceneEvent::Shoot(self.get_collision_layer()));
     }
 }
 

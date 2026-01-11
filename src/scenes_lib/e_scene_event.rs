@@ -1,5 +1,6 @@
 ﻿use vek::Vec2;
 use crate::classes::t_entity::Entity;
+use crate::collisions_lib::e_col_layers::ColLayer;
 
 pub enum SceneEvent{
     None,
@@ -9,4 +10,5 @@ pub enum SceneEvent{
     DemolishAsteroid{pos: Vec2<f32>, scale: f32, id: u32},
     PlayerDeath,
     SpawnDebris(Vec2<f32>),
+    Shoot(ColLayer),
 }

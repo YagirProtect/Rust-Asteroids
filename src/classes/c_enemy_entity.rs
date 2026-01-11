@@ -74,6 +74,7 @@ impl EnemyEntity {
             ColLayer::BulletEnemy
         );
 
+        events.push(SceneEvent::Shoot(self.get_collision_layer()));
         events.push(SpawnEntity(Box::new(bullet)));
     }
 }
