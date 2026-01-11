@@ -3,6 +3,7 @@
 use std::{error::Error, time::Instant};
 use std::path::Path;
 use std::sync::Arc;
+use egui::{FontData, FontDefinitions, FontFamily};
 use egui_wgpu::Renderer as EguiRenderer;
 use egui_winit::State as EguiWinitState;
 use pixels::{wgpu, Pixels, SurfaceTexture};
@@ -58,7 +59,7 @@ impl AppHandler {
 
         let egui_ctx = egui::Context::default();
         let viewport_id = egui_ctx.viewport_id();
-
+        setup_egui_fonts(&egui_ctx);
 
         game.get_assets_db_mut().load_dynamic(&egui_ctx);
         game.open_default_scene();
@@ -233,4 +234,21 @@ pub fn set_window_icon_from_png(window: &Window, path: impl AsRef<Path>) {
         Ok(icon) => window.set_window_icon(Some(icon)),
         Err(e) => eprintln!("icon load failed: {e}"),
     }
+}
+
+
+pub fn setup_egui_fonts(ctx: &egui::Context) {
+    let mut fonts = FontDefinitions::default();
+
+    fonts.font_data.insert(
+        "Inter".to_owned(),
+        FontData::from_static(include_bytes!("../../data/fonts/Aldrich-Regular.ttf")),
+    );
+
+    fonts
+        .families
+        .entry(FontFamily::Proportional)
+        .or_default()
+        .insert(0, "Inter".to_owned());
+    ctx.set_fonts(fonts);
 }
