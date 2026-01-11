@@ -148,4 +148,4 @@ If you use your own backend, make sure the JSON fields match what your server ex
 
 ## License
 
-Choose a license that fits your needs (MIT / Apache-2.0 / proprietary). Currently unspecified.
+MIT
