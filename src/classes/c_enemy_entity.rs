@@ -105,6 +105,7 @@ impl Entity for EnemyEntity {
 
         if (self.destroy) {
             events.push(SceneEvent::DestroyEntity(self.id));
+            events.push(SceneEvent::SpawnDebris(*self.transform.get_position()));
         }
 
         self.global_time += delta_time * 5.0;

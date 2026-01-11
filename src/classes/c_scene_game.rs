@@ -1,7 +1,7 @@
 ﻿use std::rc::Rc;
 use egui::{vec2, Align, Context, Layout};
 use rand::prelude::ThreadRng;
-use rand::Rng;
+use rand::{rng, Rng};
 use crate::assetsdb_lib::c_assets_db::AssetsDB;
 use crate::classes::c_asteroid_entity::AsteroidEntity;
 use crate::classes::c_player_entity::PlayerEntity;
@@ -12,6 +12,7 @@ use crate::scenes_lib::t_scene::Scene;
 use crate::transform_lib::c_transform::Transform;
 use rand::seq::IteratorRandom;
 use vek::Vec2;
+use crate::classes::c_debris_entity::DebrisEntity;
 use crate::classes::c_enemy_entity::EnemyEntity;
 use crate::mesh_lib::c_mesh::Mesh;
 use crate::render_lib::f_drawers::{ui_button, ui_draw_icon, ui_get_card_rect, ui_title_rect, ui_transparent_frame};
@@ -124,7 +125,7 @@ impl GameScene {
 
     pub fn spawn_enemy_timer(&mut self, delta_time: f32, config: &Config, assets_db: &AssetsDB) {
         self.enemy_timer += delta_time;
-        if (self.enemy_timer >= 5.0){
+        if (self.enemy_timer >= 20.0){
 
             let mut is_can_spawn = true;
             let min_dist = 400.0;
@@ -150,14 +151,34 @@ impl GameScene {
     }
 
 
-    pub fn spawn_debris(&mut self, config: &Config, assets_db: &AssetsDB){
+    pub fn spawn_debris(&mut self, pos: Vec2<f32>, config: &Config, assets_db: &AssetsDB){
         let mut rand = rand::rng();
-        
+
         let count = rand.random_range(3..6);
 
 
+
+
         for i in 0..count {
-            
+
+            let mesh: Rc<Mesh> = self.debris_models
+                .iter()
+                .choose(&mut rand)
+                .cloned()
+                .unwrap();
+
+            let val = DebrisEntity::new(
+                Transform::new(
+                    pos,
+                    Vec2::new(1.0, 1.0) * rand.random_range(0.25..1.0),
+                    rand.random_range(-360.0..360.0),
+                    config.size()
+                ),
+                mesh
+            );
+
+
+            self.add_entity(Box::new(val));
         }
     }
 }
@@ -178,12 +199,33 @@ impl Scene for GameScene
 
         self.player_healths = 3;
 
+
         self.asteroids_models = vec![
             assets_db.get_mesh_by_name("asteroid_01").unwrap_or_default(),
             assets_db.get_mesh_by_name("asteroid_02").unwrap_or_default(),
             assets_db.get_mesh_by_name("asteroid_03").unwrap_or_default(),
             assets_db.get_mesh_by_name("asteroid_04").unwrap_or_default()
         ];
+
+        self.debris_models = vec![
+            assets_db.get_mesh_by_name("debris_01").unwrap_or_default(),
+            assets_db.get_mesh_by_name("debris_02").unwrap_or_default(),
+            assets_db.get_mesh_by_name("debris_03").unwrap_or_default(),
+            assets_db.get_mesh_by_name("debris_04").unwrap_or_default(),
+            assets_db.get_mesh_by_name("debris_05").unwrap_or_default(),
+            assets_db.get_mesh_by_name("debris_06").unwrap_or_default(),
+            assets_db.get_mesh_by_name("debris_07").unwrap_or_default(),
+            assets_db.get_mesh_by_name("debris_08").unwrap_or_default(),
+            assets_db.get_mesh_by_name("debris_09").unwrap_or_default(),
+            assets_db.get_mesh_by_name("debris_10").unwrap_or_default(),
+            assets_db.get_mesh_by_name("debris_11").unwrap_or_default(),
+            assets_db.get_mesh_by_name("debris_12").unwrap_or_default(),
+            assets_db.get_mesh_by_name("debris_13").unwrap_or_default(),
+            assets_db.get_mesh_by_name("debris_14").unwrap_or_default(),
+            assets_db.get_mesh_by_name("debris_15").unwrap_or_default(),
+        ];
+
+
 
         self.asteroids_count = 5;
         self.health_icon = assets_db.get_sprite_by_name("heart").unwrap_or_default();
@@ -225,6 +267,9 @@ impl Scene for GameScene
                         self.state = GameState::End;
                         self.remove_entity(self.player_id);
                     }
+                }
+                SceneEvent::SpawnDebris(pos) =>{
+                    self.spawn_debris(*pos, config, asset_db);
                 }
                 _=>{}
             }

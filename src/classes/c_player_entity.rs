@@ -120,6 +120,7 @@ impl Entity for PlayerEntity {
         let mut events = vec![];
 
         if (self.is_hitted){
+            events.push(SceneEvent::SpawnDebris(*self.transform.get_position()));
             self.is_hitted = false;
 
             self.transform.set_velocity(Vec2::zero());

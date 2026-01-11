@@ -9,3 +9,4 @@ mod bullet_entity;
 mod c_asteroid_entity;
 mod c_enemy_entity;
 mod c_scene_test;
+mod c_debris_entity;
