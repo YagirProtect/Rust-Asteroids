@@ -62,7 +62,7 @@ impl Collide for AsteroidEntity {
     }
 
     fn on_collision(&mut self, layer: ColLayer) {
-        if (layer == ColLayer::BulletPlayer || layer == ColLayer::BulletEnemy) {
+        if (layer == ColLayer::BulletPlayer || layer == ColLayer::BulletEnemy || layer == ColLayer::Player || layer == ColLayer::Enemy) {
             self.is_need_destroy = true;
         }
     }

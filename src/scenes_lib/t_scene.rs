@@ -34,7 +34,7 @@ pub trait Scene {
         }
 
 
-        self.custom_events_solve(&commands, &config, assets_db);
+        self.custom_events_solve(&commands, &config, assets_db, dt);
 
         for command in commands {
             match command {
@@ -52,7 +52,7 @@ pub trait Scene {
         }
     }
 
-    fn custom_events_solve(&mut self, scene_event: &Vec<SceneEvent>, config: &Config, assets_db: &AssetsDB){
+    fn custom_events_solve(&mut self, scene_event: &Vec<SceneEvent>, config: &Config, assets_db: &AssetsDB, delta_time: f32) {
 
     }
 

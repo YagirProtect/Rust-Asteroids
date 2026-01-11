@@ -7,3 +7,5 @@ pub mod c_scene_game;
 pub mod t_entity;
 mod bullet_entity;
 mod c_asteroid_entity;
+mod c_enemy_entity;
+mod c_scene_test;

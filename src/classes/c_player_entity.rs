@@ -99,7 +99,7 @@ impl Collide for PlayerEntity {
 
     fn on_collision(&mut self, layer: ColLayer) {
         if (self.is_god_mode) {return};
-        if (layer == ColLayer::BulletEnemy || layer == ColLayer::Asteroid){
+        if (layer == ColLayer::BulletEnemy || layer == ColLayer::Asteroid || layer == ColLayer::Enemy){
             self.is_hitted = true;
         }
     }
@@ -216,7 +216,8 @@ impl PlayerEntity {
                 config.size()
             ),
             mesh.unwrap_or_default(),
-            self.transform.get_velocity().magnitude()
+            self.transform.get_velocity().magnitude(),
+            ColLayer::BulletPlayer
         );
 
 

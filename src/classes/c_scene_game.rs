@@ -12,8 +12,9 @@ use crate::scenes_lib::t_scene::Scene;
 use crate::transform_lib::c_transform::Transform;
 use rand::seq::IteratorRandom;
 use vek::Vec2;
+use crate::classes::c_enemy_entity::EnemyEntity;
 use crate::mesh_lib::c_mesh::Mesh;
-use crate::render_lib::f_drawers::ui_draw_icon;
+use crate::render_lib::f_drawers::{ui_button, ui_draw_icon, ui_get_card_rect, ui_title_rect, ui_transparent_frame};
 use crate::scenes_lib::e_scene_event::SceneEvent;
 use crate::scenes_lib::e_scene_switch::SceneSwitch;
 use crate::scenes_lib::e_sceneid::SceneId;
@@ -34,6 +35,7 @@ pub struct GameScene {
     asteroids_ids: Vec<u32>,
     player_id: u32,
     asteroids_models: Vec<Rc<Mesh>>,
+    debris_models: Vec<Rc<Mesh>>,
     web_client: WebClient,
 
 
@@ -41,10 +43,14 @@ pub struct GameScene {
     player_healths: i8,
     scores: u32,
     health_icon: Rc<SpriteTex>,
+
+    enemy_timer: f32,
+
+    asteroids_count: u32
 }
 
 impl GameScene {
-    fn spawn_asteroids(&mut self, config: &Config) {
+    pub fn spawn_asteroids(&mut self, config: &Config) {
         let mut rng = rand::rng();
 
 
@@ -52,7 +58,7 @@ impl GameScene {
         let player_entity = self.entities.iter().find(|x| x.get_entity_id() == self.player_id).unwrap();
 
         let player_pos: Vec2<f32> = player_entity.get_position().clone();
-        while self.asteroids_ids.len() < 5 {
+        while self.asteroids_ids.len() < self.asteroids_count as usize {
             let random_pos = Vec2::new(
                 rng.random_range(0..config.x()) as f32,
                 rng.random_range(0..config.y()) as f32
@@ -67,7 +73,7 @@ impl GameScene {
         }
     }
 
-    fn spawn_asteroid(&mut self, config: &Config, mut rng: &mut ThreadRng, random_pos: Vec2<f32>,min_scale: f32, max_scale: f32) {
+    pub fn spawn_asteroid(&mut self, config: &Config, mut rng: &mut ThreadRng, random_pos: Vec2<f32>,min_scale: f32, max_scale: f32) {
 
 
 
@@ -103,7 +109,57 @@ impl GameScene {
         self.asteroids_ids.push(id);
     }
 
+    pub fn spawn_enemy(&mut self, pos: Vec2<f32>, config: &Config, assets_db: &AssetsDB){
+        let mut enemy = EnemyEntity::new(
+            Transform::new(
+                pos,
+                Vec2::new(0.7, 0.7),
+                0.0,
+                config.size()
+            ),
+            assets_db.get_mesh_by_name("ufo_01").unwrap_or_default()
+        );
+        self.add_entity(Box::new(enemy));
+    }
 
+    pub fn spawn_enemy_timer(&mut self, delta_time: f32, config: &Config, assets_db: &AssetsDB) {
+        self.enemy_timer += delta_time;
+        if (self.enemy_timer >= 5.0){
+
+            let mut is_can_spawn = true;
+            let min_dist = 400.0;
+
+            let mut rng = rand::rng();
+            let random_pos = Vec2::new(
+                rng.random_range(100..(config.x()-100)) as f32,
+                rng.random_range(100..(config.y() - 100)) as f32
+            );
+
+            for entity in self.entities.iter() {
+                if (entity.get_position().distance(random_pos) < min_dist){
+                    is_can_spawn = false;
+                    break;
+                }
+            }
+
+            if (is_can_spawn) {
+                self.spawn_enemy(random_pos, config, assets_db);
+                self.enemy_timer = -10.0
+            }
+        }
+    }
+
+
+    pub fn spawn_debris(&mut self, config: &Config, assets_db: &AssetsDB){
+        let mut rand = rand::rng();
+        
+        let count = rand.random_range(3..6);
+
+
+        for i in 0..count {
+            
+        }
+    }
 }
 
 
@@ -129,14 +185,18 @@ impl Scene for GameScene
             assets_db.get_mesh_by_name("asteroid_04").unwrap_or_default()
         ];
 
-
+        self.asteroids_count = 5;
         self.health_icon = assets_db.get_sprite_by_name("heart").unwrap_or_default();
         self.player_id = self.add_entity(Box::new(player));
 
         self.spawn_asteroids(&config);
     }
 
-    fn custom_events_solve(&mut self, scene_event: &Vec<SceneEvent>, config: &Config, asset_db: &AssetsDB) {
+    fn custom_events_solve(&mut self, scene_event: &Vec<SceneEvent>, config: &Config, asset_db: &AssetsDB, dt: f32) {
+
+
+        self.spawn_enemy_timer(dt, config, asset_db);
+
         for n in scene_event {
             match n {
                 SceneEvent::DemolishAsteroid { pos, scale, id  } => {
@@ -171,6 +231,7 @@ impl Scene for GameScene
         }
 
         if (self.asteroids_ids.len() == 0){
+            self.asteroids_count += 2;
             self.spawn_asteroids(&config)
         }
     }
@@ -178,9 +239,7 @@ impl Scene for GameScene
     fn ui(&mut self, ctx: &Context) -> SceneSwitch {
         match self.state {
             GameState::Active => {
-                let frame = egui::Frame::none()
-                    .fill(egui::Color32::from_rgba_unmultiplied(0, 0, 0, 0))
-                    .stroke(egui::Stroke::NONE);
+                let frame = ui_transparent_frame();
                 egui::TopBottomPanel::top("bottom_data")
                     .frame(frame)
                     .show_separator_line(false)
@@ -208,32 +267,15 @@ impl Scene for GameScene
                 let can_send = self.web_client.is_available_name();
                 let mut nickname = self.web_client.get_nickname();
 
-                let frame = egui::Frame::none()
-                    .fill(egui::Color32::from_rgba_unmultiplied(0,0,0,0))
-                    .stroke(egui::Stroke::new(2.0, egui::Color32::from_rgb(80, 80, 80)));
-
-                let btn_size = egui::vec2(260.0, 30.0);
+                let frame = ui_transparent_frame();
                 let mut scene_switch = SceneSwitch::None;
 
                 egui::CentralPanel::default().frame(frame).show(ctx, |ui| {
-                    let avail = ui.max_rect();
+                    let (avail, title_rect) = ui_title_rect(ui);
+                    let (card_rect, card_frame) = ui_get_card_rect(avail);
 
-                    let win_size = egui::vec2(520.0, 360.0);
-                    let mut rect = egui::Rect::from_center_size(avail.center(), win_size);
-
-                    rect.min.x = rect.min.x.round();
-                    rect.min.y = rect.min.y.round();
-                    rect.max.x = rect.max.x.round();
-                    rect.max.y = rect.max.y.round();
-
-                    let frame = egui::Frame::none()
-                        .fill(egui::Color32::from_rgba_unmultiplied(20, 20, 20, 220))
-                        .stroke(egui::Stroke::new(2.0, egui::Color32::from_rgb(80, 80, 80)))
-                        .rounding(egui::Rounding::same(12.0))
-                        .inner_margin(egui::Margin::same(18.0));
-
-                    ui.allocate_ui_at_rect(rect, |ui| {
-                        frame.show(ui, |ui| {
+                    ui.allocate_ui_at_rect(card_rect, |ui| {
+                        card_frame.show(ui, |ui| {
                             ui.vertical_centered(|ui| {
                                 ui.label(
                                     egui::RichText::new(format!("SCORES\n{:06}", self.scores))
@@ -260,20 +302,14 @@ impl Scene for GameScene
 
 
                                 ui.add_enabled_ui(can_send, |ui| {
-                                    if ui
-                                        .add_sized(btn_size, egui::Button::new(egui::RichText::new("Send").size(22.0).strong()))
-                                        .clicked()
+                                    if ui_button(ui, "Send")
                                     {
                                         self.web_client.send_web_data(self.scores);
                                         scene_switch = SceneSwitch::Switch(SceneId::Menu);
                                     }
                                 });
-
                                 ui.add_space(10.0);
-
-                                if ui
-                                    .add_sized(btn_size, egui::Button::new(egui::RichText::new("Menu").size(22.0).strong()))
-                                    .clicked()
+                                if ui_button(ui, "Menu")
                                 {
                                     scene_switch = SceneSwitch::Switch(SceneId::Menu);
                                 }
@@ -291,7 +327,7 @@ impl Scene for GameScene
     }
 
     fn get_scene_name(&self) -> String{
-        String::from("TestScene")
+        String::from("GameScene")
     }
 
     fn get_entities(&self) -> &Vec<Box<dyn Entity>> {
@@ -301,8 +337,6 @@ impl Scene for GameScene
     fn get_entities_mut(&mut self) -> &mut Vec<Box<dyn Entity>> {
         &mut self.entities
     }
-
-
 }
 
 

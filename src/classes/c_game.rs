@@ -2,6 +2,7 @@
 use crate::classes::c_input::Input;
 use crate::classes::c_scene_game::GameScene;
 use crate::classes::c_scene_menu::MenuScene;
+use crate::classes::c_scene_test::TestScene;
 use crate::config_lib::c_config::Config;
 use crate::render_lib::t_screen_data::Screen;
 use crate::scenes_lib::e_scene_switch::SceneSwitch;
@@ -110,7 +111,7 @@ fn make_scene(scene_id: SceneId, config: &Config, screen: &Screen, assets_db: &A
     let mut value : Box<dyn Scene> = match scene_id {
         SceneId::Menu => Box::new(MenuScene::default()),
         SceneId::Game => Box::new(GameScene::default()),
-        SceneId::Test => Box::new(GameScene::default())
+        SceneId::Test => Box::new(TestScene::default())
     };
     
     value.create_scene(config, screen, assets_db);

@@ -19,7 +19,8 @@ pub struct BulletEntity {
     mesh: Rc<Mesh>,
     speed: f32,
 
-    timer: f32
+    timer: f32,
+    col_layers: ColLayer,
 }
 
 impl Drawable for BulletEntity {
@@ -30,7 +31,7 @@ impl Drawable for BulletEntity {
 
 impl Collide for BulletEntity {
     fn get_collision_layer(&self) -> ColLayer {
-        ColLayer::BulletPlayer
+        self.col_layers
     }
 
     fn get_collision_mesh(&self) -> Option<(Rc<Mesh>, &Transform)> {
@@ -73,7 +74,7 @@ impl Entity for BulletEntity {
 }
 
 impl BulletEntity {
-    pub fn new(transform: Transform, mesh: Rc<Mesh>, start_speed: f32) -> BulletEntity {
+    pub fn new(transform: Transform, mesh: Rc<Mesh>, start_speed: f32, col: ColLayer) -> BulletEntity {
 
 
         BulletEntity {
@@ -81,7 +82,8 @@ impl BulletEntity {
             transform: transform,
             mesh: mesh,
             speed: start_speed + 2000.0,
-            timer: 0.0
+            timer: 0.0,
+            col_layers: col,
         }
     }
 }

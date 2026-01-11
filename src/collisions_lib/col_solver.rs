@@ -6,13 +6,14 @@ use crate::scenes_lib::e_scene_event::SceneEvent;
 
 
 
-pub const LAYER_COUNT: usize = 4;
+pub const LAYER_COUNT: usize = 5;
 pub const COLLISION_TABLE: [[bool; LAYER_COUNT]; LAYER_COUNT] = [
-    //            Player  Asteroid BulletP BulletE
-    /* Player */ [false,  true,    false,  true ],
-    /* Astero */ [true,   false,   true,   true],
-    /* BulletP*/ [false,  true,    false,  false],
-    /* BulletE*/ [true,   false,   false,  false],
+    //            Player  Asteroid BulletP BulletE, Enemy
+    /* Player */ [false,  true,    false,  true , true],
+    /* Astero */ [true,   false,   true,   true,  true],
+    /* BulletP*/ [false,  true,    false,  false, true],
+    /* BulletE*/ [true,   false,   false,  false, false],
+    /* Enemy*/   [true,   true,    true,   false, false],
 ];
 
 pub fn solve_collision(entity: &mut Vec<Box<dyn Entity>>) -> Vec<SceneEvent> {

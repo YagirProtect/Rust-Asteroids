@@ -5,6 +5,7 @@ pub enum ColLayer {
     Asteroid = 1,
     BulletPlayer = 2,
     BulletEnemy = 3,
+    Enemy = 4
 }
 
 impl ColLayer {
