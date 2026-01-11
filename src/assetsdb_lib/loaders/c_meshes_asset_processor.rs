@@ -1,11 +1,10 @@
 ﻿use crate::assetsdb_lib::e_asset::Asset;
 use crate::assetsdb_lib::loaders::t_asset_loader::AssetLoader;
+use crate::assetsdb_lib::t_file_readable::FileReadable;
+use crate::mesh_lib::c_mesh::Mesh;
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::rc::Rc;
-use egui::TextBuffer;
-use crate::assetsdb_lib::t_file_readable::FileReadable;
-use crate::mesh_lib::c_mesh::Mesh;
 
 #[derive(Default)]
 pub struct MeshLoader{}
